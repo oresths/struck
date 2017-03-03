@@ -7,11 +7,26 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_HOME_DIRECTORY}/cmake ${CMAKE_MODULE_PATH})
+message(STATUS ${CMAKE_HOME_DIRECTORY})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-find_package(Eigen REQUIRED)
-find_package(OpenCV REQUIRED)
+
+#find_package(Eigen REQUIRED HINTS ${CMAKE_HOME_DIRECTORY})
+#find_package(OpenCV REQUIRED)
+
+# add OpenCV
+set(OPENCV_DIR_HINT "")
+
+if(WIN32)
+    get_filename_component(OPENCV_DIR_PLATFORM $ENV{OPENCV_DIR} DIRECTORY)
+    get_filename_component(OPENCV_DIR_HINT ${OPENCV_DIR_PLATFORM} DIRECTORY)
+endif(WIN32)
+
+set(OpenCV_STATIC OFF)
+find_package(OpenCV REQUIRED HINTS ${OPENCV_DIR_HINT})
+
+SET( EIGEN_INCLUDE_DIRS ${CMAKE_HOME_DIRECTORY} )
 
 include_directories(
     src
