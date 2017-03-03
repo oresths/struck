@@ -48,14 +48,37 @@ void rectangle(Mat& rMat, const FloatRect& rRect, const Scalar& rColour)
 
 int main(int argc, char* argv[])
 {
-	// read config file
-	string configPath = "config.txt";
+	float xmin = -1.f;
+	float ymin = -1.f;
+	float width = -1.f;
+	float height = -1.f;
+
+	int startFrame = -1;
+	int endFrame = -1;
+
+	string imgs_path;
+
 	if (argc > 1)
 	{
-		configPath = argv[1];
+		xmin = static_cast<float>(atof(argv[1]));	//x
+		ymin = static_cast<float>(atof(argv[2]));	//y
+		width = static_cast<float>(atof(argv[3]));	//width
+		height = static_cast<float>(atof(argv[4]));	//height
+
+		startFrame = atoi(argv[5]);
+		endFrame = atoi(argv[6]);
+
+		imgs_path = argv[7];
 	}
+
+	// read config file
+	string configPath = "config.txt";
+
 	Config conf(configPath);
-	cout << conf << endl;
+	if (!conf.quietMode)
+	{
+		cout << conf << endl;
+	}
 	
 	if (conf.features.size() == 0)
 	{
@@ -79,13 +102,13 @@ int main(int argc, char* argv[])
 	
 	VideoCapture cap;
 	
-	int startFrame = -1;
-	int endFrame = -1;
+	//int startFrame = -1;
+	//int endFrame = -1;
 	FloatRect initBB;
 	string imgFormat;
 	float scaleW = 1.f;
 	float scaleH = 1.f;
-	
+
 	if (useCamera)
 	{
 		if (!cap.open(0))
@@ -105,24 +128,26 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		// parse frames file
-		string framesFilePath = conf.sequenceBasePath+"/"+conf.sequenceName+"/"+conf.sequenceName+"_frames.txt";
-		ifstream framesFile(framesFilePath.c_str(), ios::in);
-		if (!framesFile)
-		{
-			cout << "error: could not open sequence frames file: " << framesFilePath << endl;
-			return EXIT_FAILURE;
-		}
-		string framesLine;
-		getline(framesFile, framesLine);
-		sscanf(framesLine.c_str(), "%d,%d", &startFrame, &endFrame);
-		if (framesFile.fail() || startFrame == -1 || endFrame == -1)
-		{
-			cout << "error: could not parse sequence frames file" << endl;
-			return EXIT_FAILURE;
-		}
+		//// parse frames file
+		//string framesFilePath = conf.sequenceBasePath+"/"+conf.sequenceName+"/"+conf.sequenceName+"_frames.txt";
+		//ifstream framesFile(framesFilePath.c_str(), ios::in);
+		//if (!framesFile)
+		//{
+		//	cout << "error: could not open sequence frames file: " << framesFilePath << endl;
+		//	return EXIT_FAILURE;
+		//}
+		//string framesLine;
+		//getline(framesFile, framesLine);
+		//sscanf(framesLine.c_str(), "%d,%d", &startFrame, &endFrame);
+		//if (framesFile.fail() || startFrame == -1 || endFrame == -1)
+		//{
+		//	cout << "error: could not parse sequence frames file" << endl;
+		//	return EXIT_FAILURE;
+		//}
 		
-		imgFormat = conf.sequenceBasePath+"/"+conf.sequenceName+"/imgs/img%05d.png";
+		//imgFormat = conf.sequenceBasePath+"/"+conf.sequenceName+"/imgs/img%05d.png";
+		imgFormat = imgs_path + "%06d.jpg";
+
 		
 		// read first frame to get size
 		char imgPath[256];
@@ -131,26 +156,26 @@ int main(int argc, char* argv[])
 		scaleW = (float)conf.frameWidth/tmp.cols;
 		scaleH = (float)conf.frameHeight/tmp.rows;
 		
-		// read init box from ground truth file
-		string gtFilePath = conf.sequenceBasePath+"/"+conf.sequenceName+"/"+conf.sequenceName+"_gt.txt";
-		ifstream gtFile(gtFilePath.c_str(), ios::in);
-		if (!gtFile)
-		{
-			cout << "error: could not open sequence gt file: " << gtFilePath << endl;
-			return EXIT_FAILURE;
-		}
-		string gtLine;
-		getline(gtFile, gtLine);
-		float xmin = -1.f;
-		float ymin = -1.f;
-		float width = -1.f;
-		float height = -1.f;
-		sscanf(gtLine.c_str(), "%f,%f,%f,%f", &xmin, &ymin, &width, &height);
-		if (gtFile.fail() || xmin < 0.f || ymin < 0.f || width < 0.f || height < 0.f)
-		{
-			cout << "error: could not parse sequence gt file" << endl;
-			return EXIT_FAILURE;
-		}
+		//// read init box from ground truth file
+		//string gtFilePath = conf.sequenceBasePath+"/"+conf.sequenceName+"/"+conf.sequenceName+"_gt.txt";
+		//ifstream gtFile(gtFilePath.c_str(), ios::in);
+		//if (!gtFile)
+		//{
+		//	cout << "error: could not open sequence gt file: " << gtFilePath << endl;
+		//	return EXIT_FAILURE;
+		//}
+		//string gtLine;
+		//getline(gtFile, gtLine);
+		//float xmin = -1.f;
+		//float ymin = -1.f;
+		//float width = -1.f;
+		//float height = -1.f;
+		//sscanf(gtLine.c_str(), "%f,%f,%f,%f", &xmin, &ymin, &width, &height);
+		//if (gtFile.fail() || xmin < 0.f || ymin < 0.f || width < 0.f || height < 0.f)
+		//{
+		//	cout << "error: could not parse sequence gt file" << endl;
+		//	return EXIT_FAILURE;
+		//}
 		initBB = FloatRect(xmin*scaleW, ymin*scaleH, width*scaleW, height*scaleH);
 	}
 	
