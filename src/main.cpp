@@ -187,6 +187,8 @@ int main(int argc, char* argv[])
 		namedWindow("result");
 	}
 	
+	double avg_time = 0.;
+	int frames = 0;
 	Mat result(conf.frameHeight, conf.frameWidth, CV_8UC3);
 	bool paused = false;
 	bool doInitialise = false;
@@ -239,7 +241,12 @@ int main(int argc, char* argv[])
 		
 		if (tracker.IsInitialised())
 		{
+			double time_profile_counter = cv::getCPUTickCount();
 			tracker.Track(frame);
+			time_profile_counter = cv::getCPUTickCount() - time_profile_counter;
+			//std::cout << "  -> speed : " <<  time_profile_counter/((double)cvGetTickFrequency()*1000) << "ms. per frame" << std::endl;
+			avg_time += time_profile_counter / ((double)cvGetTickFrequency() * 1000);
+			frames++;
 			
 			if (!conf.quietMode && conf.debugMode)
 			{
@@ -281,6 +288,19 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
+
+	std::cout << "Average processing speed " << avg_time / frames << "ms. (" << 1. / (avg_time / frames) * 1000 << " fps)" << std::endl;
+
+	std::string output = "fps.txt";
+	std::ofstream fps_ofstream;
+
+	fps_ofstream.open(output.c_str());
+	if (!fps_ofstream.is_open())
+		std::cerr << "Error opening output file " << output << "!" << std::endl;
+
+	fps_ofstream << 1. / (avg_time / frames) * 1000 << std::endl;
+
+	fps_ofstream.close();
 	
 	if (outFile.is_open())
 	{
